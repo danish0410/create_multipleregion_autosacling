@@ -1,7 +1,11 @@
+variable "region" { default = "us-east-1" }
+variable "vpc_name" { default = "mr-us-east-1" }
+variable "vpc_cidr" { default = "10.10.0.0/16" }
+
 module "ec2_vpc_asg" {
   source = "../../modules/ec2-vpc-autoscaling"
 
-  # pass provider from root via providers = { aws = aws.ap_south_1 } (root main.tf does this)
+  # pass provider from root via providers = { aws = aws.us-east-1 } (root main.tf does this)
   region          = var.region
   vpc_name        = var.vpc_name
   vpc_cidr        = var.vpc_cidr
