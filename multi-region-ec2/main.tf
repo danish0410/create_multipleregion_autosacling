@@ -40,7 +40,7 @@ module "ap_south_1" {
   public_subnets  = ["10.10.1.0/24", "10.10.2.0/24"]
   private_subnets = ["10.10.11.0/24", "10.10.12.0/24"]
 
-  ami           = "ami-02a2af70a66af6dfb" # Amazon Linux 2 (Mumbai)
+  ami           = "ami-00305d2fa3c93abfc" # Amazon Linux 2 (Mumbai)
   ssh_key_name  = "my-key-ap-south-1"
   instance_type = "t3.micro"
 
@@ -64,7 +64,7 @@ module "us_east_1" {
   public_subnets  = ["10.20.1.0/24", "10.20.2.0/24"]
   private_subnets = ["10.20.11.0/24", "10.20.12.0/24"]
 
-  ami           = "ami-053b0d53c279acc90" # Amazon Linux 2 (US-East-1)
+  ami           = "ami-07fd08aad95a03016" # Amazon Linux 2 (US-East-1)
   ssh_key_name  = "my-key-us-east-1"
   instance_type = "t3.micro"
 
