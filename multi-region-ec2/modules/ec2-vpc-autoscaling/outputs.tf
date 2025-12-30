@@ -10,10 +10,10 @@ output "private_subnet_ids" {
   value = module.vpc.private_subnets
 }
 
-output "security_group_id" {
-  value = aws_security_group.ssh.id
-}
+# output "security_group_id" {
+#   value = aws_security_group.ec2.id
+# }
 
-output "autoscaling_group_name" {
-  value = aws_autoscaling_group.asg.name
-}
+# output "autoscaling_group_name" {
+#   value = aws_autoscaling_group.asg.name
+# }
