@@ -1,11 +1,3 @@
-# terraform {
-#   required_providers {
-#     aws = {
-#       source = "hashicorp/aws"
-#     }
-#   }
-# }
-
 terraform {
   required_providers {
     aws = {
@@ -40,5 +32,7 @@ module "ec2_vpc_asg" {
   min_size         = var.min_size
   max_size         = var.max_size
   desired_capacity = var.desired_capacity
+  # key_name         = var.key_name
+  # iam_instance_profile_name = var.iam_instance_profile_name
   # ssh_cidrs        = var.ssh_cidrs
 }

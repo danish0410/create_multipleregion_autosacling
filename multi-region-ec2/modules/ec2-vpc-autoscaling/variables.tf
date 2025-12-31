@@ -1,6 +1,6 @@
 variable "project" {
-  type        = string
-  description = "Project name for tagging"
+  type = string
+  #description = "Project name for tagging"
 }
 
 variable "vpc_name" {

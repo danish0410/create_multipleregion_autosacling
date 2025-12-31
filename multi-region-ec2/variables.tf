@@ -1,7 +1,6 @@
 variable "project" {
-  description = "Project name"
-  type        = string
-  default     = "multi-region-demo"
+  type    = string
+  default = "multi-region-demo"
 }
 
 # variable "aws_region" {
@@ -22,3 +21,12 @@ variable "enable_us_east_2" {
   type    = bool
   default = false
 }
+
+# variable "key_name" {
+#   type = string
+# }
+
+# variable "iam_instance_profile_name" {
+#   type    = string
+#   default = "dev-ssm-profile"
+# }

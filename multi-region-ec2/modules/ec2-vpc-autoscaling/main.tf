@@ -83,14 +83,10 @@ resource "aws_iam_role_policy_attachment" "cw_agent" {
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
 
-data "aws_iam_instance_profile" "ssm_profile" {
-  name = "dev-classic-us-east-1-ssm-profile"
+resource "aws_iam_instance_profile" "ssm_profile" {
+  name = "${var.vpc_name}-ssm-profile"
+  role = aws_iam_role.ec2_ssm_role.name
 }
-
-# resource "aws_iam_instance_profile" "ssm_profile" {
-#   name = "${var.vpc_name}-ssm-profile"
-#   role = aws_iam_role.ec2_ssm_role.name
-# }
 
 # --------------------------------------------------
 # Amazon Linux 2 AMI (Region-specific)
@@ -114,8 +110,7 @@ resource "aws_launch_template" "this" {
   instance_type = var.instance_type
 
   iam_instance_profile {
-    # name = aws_iam_instance_profile.ssm_profile.name
-    name = data.aws_iam_instance_profile.ssm_profile.name
+    name = aws_iam_instance_profile.ssm_profile.name
   }
 
   network_interfaces {
@@ -123,11 +118,8 @@ resource "aws_launch_template" "this" {
     security_groups             = [aws_security_group.ec2.id]
   }
 
-  user_data = base64encode(<<-EOF
-    #!/bin/bash
-    yum update -y
-    yum install -y amazon-cloudwatch-agent
-  EOF
+  user_data = base64encode(
+    file("${path.root}/../../dev_classic_userdata.sh")
   )
 
   tag_specifications {

@@ -65,6 +65,21 @@ variable "desired_capacity" {
 # }
 
 variable "project" {
-  description = "Project name for resource tagging"
-  type        = string
+  # description = "Project name for resource tagging"
+  type = string
 }
+
+# 🔑 REQUIRED
+# variable "key_name" {
+#   type = string
+
+#   validation {
+#     condition     = length(var.key_name) > 0
+#     error_message = "key_name is mandatory for ASG instances."
+#   }
+# }
+
+# 🔐 REQUIRED
+# variable "iam_instance_profile_name" {
+#   type = string
+# }

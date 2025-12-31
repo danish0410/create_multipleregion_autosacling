@@ -65,6 +65,16 @@ variable "desired_capacity" {
 # }
 
 variable "project" {
-  description = "Project name for resource tagging"
-  type        = string
+  # description = "Project name for resource tagging"
+  type = string
 }
+
+# 🔑 REQUIRED
+# variable "key_name" {
+#   type = string
+# }
+
+# 🔐 REQUIRED
+# variable "iam_instance_profile_name" {
+#   type = string
+# }
