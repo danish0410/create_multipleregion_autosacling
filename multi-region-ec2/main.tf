@@ -7,11 +7,6 @@ terraform {
   }
 }
 
-# Default provider (OPTIONAL – avoid using it)
-provider "aws" {
-  region = "ap-south-1"
-}
-
 # Aliased providers
 provider "aws" {
   alias  = "ap_south_1"

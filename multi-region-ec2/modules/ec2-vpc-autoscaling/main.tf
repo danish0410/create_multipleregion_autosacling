@@ -114,6 +114,7 @@ resource "aws_launch_template" "this" {
   instance_type = var.instance_type
 
   iam_instance_profile {
+    # name = aws_iam_instance_profile.ssm_profile.name
     name = data.aws_iam_instance_profile.ssm_profile.name
   }
 

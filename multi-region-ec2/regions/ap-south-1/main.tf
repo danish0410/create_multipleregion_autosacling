@@ -1,14 +1,28 @@
+# terraform {
+#   required_providers {
+#     aws = {
+#       source = "hashicorp/aws"
+#     }
+#   }
+# }
+
 terraform {
   required_providers {
     aws = {
-      source = "hashicorp/aws"
+      source  = "hashicorp/aws"
+      version = ">= 6.25"
     }
   }
 }
 
+provider "aws" {
+  alias  = "ap_south_1"
+  region = "ap-south-1"
+}
+
 module "ec2_vpc_asg" {
   source    = "../../modules/ec2-vpc-autoscaling"
-  providers = { aws = aws }
+  providers = { aws = aws.ap_south_1 }
 
   # pass provider from root via providers = { aws = aws.ap_south_1 } (root main.tf does this)
   #region  = var.region
