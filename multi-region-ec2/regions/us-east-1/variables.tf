@@ -69,6 +69,12 @@ variable "project" {
   type = string
 }
 
+variable "iam_instance_profile_name" {
+  description = "Existing IAM instance profile name"
+  type        = string
+}
+
+
 # 🔑 REQUIRED
 # variable "key_name" {
 #   type = string

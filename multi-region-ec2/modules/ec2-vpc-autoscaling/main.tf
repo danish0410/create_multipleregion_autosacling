@@ -15,6 +15,11 @@ data "aws_availability_zones" "available" {
 }
 
 # --------------------------------------------------
+# Current AWS Region (MODULE SCOPE)
+# --------------------------------------------------
+data "aws_region" "current" {}
+
+# --------------------------------------------------
 # VPC
 # --------------------------------------------------
 module "vpc" {
@@ -60,44 +65,91 @@ resource "aws_security_group" "ec2" {
 # --------------------------------------------------
 # IAM Role for EC2 (SSM + CloudWatch Agent)
 # --------------------------------------------------
-resource "aws_iam_role" "ec2_ssm_role" {
-  name = "${var.vpc_name}-ssm-role"
+# resource "aws_iam_role" "ec2_ssm_role" {
+#   name = "${var.vpc_name}-ssm-role"
 
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect    = "Allow"
-      Principal = { Service = "ec2.amazonaws.com" }
-      Action    = "sts:AssumeRole"
-    }]
-  })
-}
+#   assume_role_policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [{
+#       Effect    = "Allow"
+#       Principal = { Service = "ec2.amazonaws.com" }
+#       Action    = "sts:AssumeRole"
+#     }]
+#   })
+# }
 
-resource "aws_iam_role_policy_attachment" "ssm" {
-  role       = aws_iam_role.ec2_ssm_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-}
+# resource "aws_iam_role_policy_attachment" "ssm" {
+#   role       = aws_iam_role.ec2_ssm_role.name
+#   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+# }
 
-resource "aws_iam_role_policy_attachment" "cw_agent" {
-  role       = aws_iam_role.ec2_ssm_role.name
-  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
-}
+# resource "aws_iam_role_policy_attachment" "cw_agent" {
+#   role       = aws_iam_role.ec2_ssm_role.name
+#   policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+# }
 
-resource "aws_iam_instance_profile" "ssm_profile" {
-  name = "${var.vpc_name}-ssm-profile"
-  role = aws_iam_role.ec2_ssm_role.name
-}
+# resource "aws_iam_instance_profile" "ssm_profile" {
+#   name = "${var.vpc_name}-ssm-profile"
+#   role = aws_iam_role.ec2_ssm_role.name
+# }
 
 # --------------------------------------------------
 # Amazon Linux 2 AMI (Region-specific)
 # --------------------------------------------------
-data "aws_ami" "amazon_linux_2" {
+# data "aws_ami" "amazon_linux_2" {
+#   most_recent = true
+#   owners      = ["amazon"]
+
+#   filter {
+#     name   = "name"
+#     values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+#   }
+# }
+
+# --------------------------------------------------
+# AMI – Ubuntu 20.04 LTS (Canonical)
+# --------------------------------------------------
+data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = ["amazon"]
+  owners      = ["099720109477"] # Canonical
 
   filter {
     name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
+# --------------------------------------------------
+# Locals – Region Aware SSH Key
+# --------------------------------------------------
+locals {
+  ssh_key_map = {
+    ap-south-1 = "dev-classic-ap-south-1"
+    us-east-1  = "dev-classic-us-east-1"
+    us-east-2  = "dev-classic-us-east-2"
+  }
+
+  ssh_key_name = lookup(
+    local.ssh_key_map,
+    data.aws_region.current.name,
+    null
+  )
+}
+
+# --------------------------------------------------
+# Validate Key Pair Exists (FAIL FAST)
+# --------------------------------------------------
+resource "null_resource" "validate_key" {
+  lifecycle {
+    precondition {
+      condition     = local.ssh_key_name != null
+      error_message = "No SSH key defined for region ${data.aws_region.current.name}"
+    }
   }
 }
 
@@ -105,12 +157,18 @@ data "aws_ami" "amazon_linux_2" {
 # Launch Template
 # --------------------------------------------------
 resource "aws_launch_template" "this" {
-  name_prefix   = "${var.vpc_name}-lt-"
-  image_id      = data.aws_ami.amazon_linux_2.id
+  depends_on = [null_resource.validate_key]
+
+  name_prefix = "${var.vpc_name}-lt-"
+  # image_id      = data.aws_ami.amazon_linux_2.id
+  image_id      = data.aws_ami.ubuntu.id
   instance_type = var.instance_type
 
+  key_name = local.ssh_key_name
+
   iam_instance_profile {
-    name = aws_iam_instance_profile.ssm_profile.name
+    name = var.iam_instance_profile_name
+    # name = aws_iam_instance_profile.ssm_profile.name
   }
 
   network_interfaces {
@@ -124,7 +182,6 @@ resource "aws_launch_template" "this" {
 
   tag_specifications {
     resource_type = "instance"
-
     tags = {
       Name    = "${var.vpc_name}-instance"
       Project = var.project

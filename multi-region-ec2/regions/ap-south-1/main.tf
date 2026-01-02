@@ -33,6 +33,6 @@ module "ec2_vpc_asg" {
   max_size         = var.max_size
   desired_capacity = var.desired_capacity
   # key_name         = var.key_name
-  # iam_instance_profile_name = var.iam_instance_profile_name
+  iam_instance_profile_name = var.iam_instance_profile_name
   # ssh_cidrs        = var.ssh_cidrs
 }

@@ -35,3 +35,8 @@ variable "max_size" {
 variable "desired_capacity" {
   type = number
 }
+
+variable "iam_instance_profile_name" {
+  type        = string
+  description = "Existing IAM instance profile name"
+}
