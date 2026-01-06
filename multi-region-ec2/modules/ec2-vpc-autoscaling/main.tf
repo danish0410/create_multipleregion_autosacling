@@ -83,17 +83,35 @@ data "aws_ami" "ubuntu" {
 # --------------------------------------------------
 # Locals – Region Aware SSH Key
 # --------------------------------------------------
+# locals {
+#   ssh_key_map = {
+#     ap-south-1 = "dev-classic-ap-south-1"
+#     us-east-1  = "dev-classic-us-east-1"
+#     us-east-2  = "dev-classic-us-east-2"
+#   }
+
+#   ssh_key_name = lookup(
+#     local.ssh_key_map,
+#     data.aws_region.current.region,
+#     # data.aws_region.current.name,
+#     null
+#   )
+# }
+
+# -------------------------------
+# SSH public keys per region
+# -------------------------------
 locals {
-  ssh_key_map = {
+  ec2_keypair_map = {
     ap-south-1 = "dev-classic-ap-south-1"
     us-east-1  = "dev-classic-us-east-1"
     us-east-2  = "dev-classic-us-east-2"
   }
 
-  ssh_key_name = lookup(
-    local.ssh_key_map,
-    data.aws_region.current.region,
+  ec2_keypair_name = lookup(
+    local.ec2_keypair_map,
     # data.aws_region.current.name,
+    data.aws_region.current.region,
     null
   )
 }
@@ -104,9 +122,9 @@ locals {
 resource "null_resource" "validate_key" {
   lifecycle {
     precondition {
-      condition     = local.ssh_key_name != null
-      error_message = "No SSH key defined for region ${data.aws_region.current.region}"
-      # error_message = "No SSH key defined for region ${data.aws_region.current.name}"
+      # condition     = local.ssh_key_name != null
+      condition     = local.ec2_keypair_name != null
+      error_message = "No EC2 key pair defined for region ${data.aws_region.current.region}"
     }
   }
 }
@@ -122,7 +140,9 @@ resource "aws_launch_template" "this" {
   image_id      = data.aws_ami.ubuntu.id
   instance_type = var.instance_type
 
-  key_name = local.ssh_key_name
+  # key_name = local.ssh_key_name
+  # key_name = local.ssh_public_key
+  key_name = local.ec2_keypair_name
 
   iam_instance_profile {
     name = var.iam_instance_profile_name
@@ -134,9 +154,20 @@ resource "aws_launch_template" "this" {
     security_groups             = [aws_security_group.ec2.id]
   }
 
-  user_data = base64encode(
-    file("${path.root}/../../dev_classic_userdata.sh")
-  )
+  user_data = base64encode(templatefile(
+    "${path.root}/../../dev_classic_userdata.sh",
+    {
+      # region = data.aws_region.current.name
+      region = data.aws_region.current.region
+      # ssh_pub_key = local.ssh_public_key
+      # ssh_pub_key = local.ec2_keypair_name
+    }
+  ))
+
+
+  # user_data = base64encode(
+  #   file("${path.root}/../../dev_classic_userdata.sh")
+  # )
 
   tag_specifications {
     resource_type = "instance"
