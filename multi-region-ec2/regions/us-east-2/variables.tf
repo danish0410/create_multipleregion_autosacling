@@ -1,8 +1,3 @@
-# variable "region" {
-#   description = "AWS region"
-#   type        = string
-# }
-
 variable "vpc_name" {
   description = "Name of the VPC"
   type        = string
@@ -23,16 +18,6 @@ variable "private_subnets" {
   type        = list(string)
   default     = []
 }
-
-# variable "ami" {
-#   description = "AMI ID"
-#   type        = string
-# }
-
-# variable "ssh_key_name" {
-#   description = "SSH key pair name"
-#   type        = string
-# }
 
 variable "instance_type" {
   description = "EC2 instance type"
@@ -58,12 +43,6 @@ variable "desired_capacity" {
   default     = 1
 }
 
-# variable "ssh_cidrs" {
-#   description = "CIDR blocks allowed for SSH"
-#   type        = list(string)
-#   default     = ["0.0.0.0/0"]
-# }
-
 variable "project" {
   # description = "Project name for resource tagging"
   type = string
@@ -73,18 +52,3 @@ variable "iam_instance_profile_name" {
   description = "Existing IAM instance profile name"
   type        = string
 }
-
-# 🔑 REQUIRED
-# variable "key_name" {
-#   type = string
-
-#   validation {
-#     condition     = length(var.key_name) > 0
-#     error_message = "key_name is mandatory for ASG instances."
-#   }
-# }
-
-# 🔐 REQUIRED
-# variable "iam_instance_profile_name" {
-#   type = string
-# }

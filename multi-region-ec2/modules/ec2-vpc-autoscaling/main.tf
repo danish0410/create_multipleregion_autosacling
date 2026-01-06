@@ -63,50 +63,6 @@ resource "aws_security_group" "ec2" {
 }
 
 # --------------------------------------------------
-# IAM Role for EC2 (SSM + CloudWatch Agent)
-# --------------------------------------------------
-# resource "aws_iam_role" "ec2_ssm_role" {
-#   name = "${var.vpc_name}-ssm-role"
-
-#   assume_role_policy = jsonencode({
-#     Version = "2012-10-17"
-#     Statement = [{
-#       Effect    = "Allow"
-#       Principal = { Service = "ec2.amazonaws.com" }
-#       Action    = "sts:AssumeRole"
-#     }]
-#   })
-# }
-
-# resource "aws_iam_role_policy_attachment" "ssm" {
-#   role       = aws_iam_role.ec2_ssm_role.name
-#   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-# }
-
-# resource "aws_iam_role_policy_attachment" "cw_agent" {
-#   role       = aws_iam_role.ec2_ssm_role.name
-#   policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
-# }
-
-# resource "aws_iam_instance_profile" "ssm_profile" {
-#   name = "${var.vpc_name}-ssm-profile"
-#   role = aws_iam_role.ec2_ssm_role.name
-# }
-
-# --------------------------------------------------
-# Amazon Linux 2 AMI (Region-specific)
-# --------------------------------------------------
-# data "aws_ami" "amazon_linux_2" {
-#   most_recent = true
-#   owners      = ["amazon"]
-
-#   filter {
-#     name   = "name"
-#     values = ["amzn2-ami-hvm-*-x86_64-gp2"]
-#   }
-# }
-
-# --------------------------------------------------
 # AMI – Ubuntu 20.04 LTS (Canonical)
 # --------------------------------------------------
 data "aws_ami" "ubuntu" {
@@ -136,7 +92,8 @@ locals {
 
   ssh_key_name = lookup(
     local.ssh_key_map,
-    data.aws_region.current.name,
+    data.aws_region.current.region,
+    # data.aws_region.current.name,
     null
   )
 }
@@ -148,7 +105,8 @@ resource "null_resource" "validate_key" {
   lifecycle {
     precondition {
       condition     = local.ssh_key_name != null
-      error_message = "No SSH key defined for region ${data.aws_region.current.name}"
+      error_message = "No SSH key defined for region ${data.aws_region.current.region}"
+      # error_message = "No SSH key defined for region ${data.aws_region.current.name}"
     }
   }
 }

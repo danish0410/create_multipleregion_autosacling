@@ -7,7 +7,9 @@ terraform {
   }
 }
 
+###########################################
 # Aliased providers
+###########################################
 provider "aws" {
   alias  = "ap_south_1"
   region = "ap-south-1"
@@ -45,9 +47,7 @@ module "ap_south_1" {
   max_size         = 2
   desired_capacity = 1
 
-  # key_name = "dev-classic-ap-south-1"
-  # iam_instance_profile_name = var.iam_instance_profile_name
-  # iam_instance_profile_name = aws_iam_instance_profile.ssm_profile.name
+  iam_instance_profile_name = var.iam_instance_profile_name
 }
 
 ###########################################
@@ -72,9 +72,7 @@ module "us_east_1" {
   max_size         = 2
   desired_capacity = 1
 
-  # key_name = "dev-classic-us-east-1"
-  # iam_instance_profile_name = var.iam_instance_profile_name
-  # iam_instance_profile_name = aws_iam_instance_profile.ssm_profile.name
+  iam_instance_profile_name = var.iam_instance_profile_name
 }
 
 ###########################################
@@ -99,8 +97,5 @@ module "us_east_2" {
   max_size         = 2
   desired_capacity = 1
 
-  # 🔑 PASS KEY HERE
-  # key_name = "dev-classic-us-east-2"
-  # iam_instance_profile_name = var.iam_instance_profile_name
-  # iam_instance_profile_name = aws_iam_instance_profile.ssm_profile.name
+  iam_instance_profile_name = var.iam_instance_profile_name
 }

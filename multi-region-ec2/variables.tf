@@ -3,10 +3,6 @@ variable "project" {
   default = "multi-region-demo"
 }
 
-# variable "aws_region" {
-#   type = string
-# }
-
 variable "enable_ap_south_1" {
   type    = bool
   default = false
@@ -22,11 +18,7 @@ variable "enable_us_east_2" {
   default = false
 }
 
-# variable "key_name" {
-#   type = string
-# }
-
-# variable "iam_instance_profile_name" {
-#   type    = string
-#   default = "dev-ssm-profile"
-# }
+variable "iam_instance_profile_name" {
+  type    = string
+  default = "dev-ssm-profile"
+}
