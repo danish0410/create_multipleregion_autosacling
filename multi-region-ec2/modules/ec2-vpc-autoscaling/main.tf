@@ -44,9 +44,72 @@ module "vpc" {
 # --------------------------------------------------
 # Security Group (SSM only – no SSH)
 # --------------------------------------------------
-resource "aws_security_group" "ec2" {
-  name        = "${var.vpc_name}-ec2-sg"
-  description = "EC2 SG for ASG instances"
+# resource "aws_security_group" "ec2" {
+#   name        = "${var.vpc_name}-ec2-sg"
+#   description = "EC2 SG for ASG instances"
+#   vpc_id      = module.vpc.vpc_id
+
+#   egress {
+#     from_port   = 0
+#     to_port     = 0
+#     protocol    = "-1"
+#     cidr_blocks = ["0.0.0.0/0"]
+#   }
+
+#   tags = {
+#     Name    = "${var.vpc_name}-ec2-sg"
+#     Project = var.project
+#   }
+# }
+
+# --------------------------------------------------
+# Security Group - Common Access
+# --------------------------------------------------
+resource "aws_security_group" "common" {
+  name        = "${var.vpc_name}-common-sg"
+  description = "Common SG (SSH, HTTP, HTTPS)"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name    = "${var.vpc_name}-common-sg"
+    Project = var.project
+  }
+}
+
+# --------------------------------------------------
+# Security Group - User (No Inbound)
+# --------------------------------------------------
+resource "aws_security_group" "user" {
+  name        = "${var.vpc_name}-user-sg"
+  description = "User SG with no inbound rules"
   vpc_id      = module.vpc.vpc_id
 
   egress {
@@ -57,7 +120,7 @@ resource "aws_security_group" "ec2" {
   }
 
   tags = {
-    Name    = "${var.vpc_name}-ec2-sg"
+    Name    = "${var.vpc_name}-user-sg"
     Project = var.project
   }
 }
@@ -151,7 +214,11 @@ resource "aws_launch_template" "this" {
 
   network_interfaces {
     associate_public_ip_address = true
-    security_groups             = [aws_security_group.ec2.id]
+    # security_groups             = [aws_security_group.ec2.id]
+    security_groups = [
+      aws_security_group.common.id,
+      aws_security_group.user.id
+    ]
   }
 
   user_data = base64encode(templatefile(
