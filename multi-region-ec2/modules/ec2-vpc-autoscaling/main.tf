@@ -71,13 +71,6 @@ resource "aws_security_group" "common" {
   vpc_id      = module.vpc.vpc_id
 
   ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
@@ -126,22 +119,54 @@ resource "aws_security_group" "user" {
 }
 
 # --------------------------------------------------
-# AMI – Ubuntu 20.04 LTS (Canonical)
+# AMI – Ubuntu 24.04 LTS (Noble) via Canonical SSM
 # --------------------------------------------------
-data "aws_ami" "ubuntu" {
-  most_recent = true
-  owners      = ["099720109477"] # Canonical
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
+data "aws_ssm_parameter" "ubuntu_24_04" {
+  name = "/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id"
 }
+
+# data "aws_ami" "ubuntu" {
+#   most_recent = true
+#   owners      = ["099720109477"] # Canonical
+
+#   filter {
+#     name   = "name"
+#     values = ["ubuntu/images/hvm-ssd/ubuntu-noble-24.04-amd64-server-*"]
+#   }
+
+#   filter {
+#     name   = "virtualization-type"
+#     values = ["hvm"]
+#   }
+
+#   filter {
+#     name   = "root-device-type"
+#     values = ["ebs"]
+#   }
+
+#   filter {
+#     name   = "architecture"
+#     values = ["x86_64"]
+#   }
+# }
+
+# # --------------------------------------------------
+# # AMI – Ubuntu 20.04 LTS (Canonical)
+# # --------------------------------------------------
+# data "aws_ami" "ubuntu" {
+#   most_recent = true
+#   owners      = ["099720109477"] # Canonical
+
+#   filter {
+#     name   = "name"
+#     values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+#   }
+
+#   filter {
+#     name   = "virtualization-type"
+#     values = ["hvm"]
+#   }
+# }
 
 # --------------------------------------------------
 # Locals – Region Aware SSH Key
@@ -200,7 +225,8 @@ resource "aws_launch_template" "this" {
 
   name_prefix = "${var.vpc_name}-lt-"
   # image_id      = data.aws_ami.amazon_linux_2.id
-  image_id      = data.aws_ami.ubuntu.id
+  # image_id      = data.aws_ami.ubuntu.id
+  image_id      = data.aws_ssm_parameter.ubuntu_24_04.value
   instance_type = var.instance_type
 
   # key_name = local.ssh_key_name
@@ -231,6 +257,11 @@ resource "aws_launch_template" "this" {
     }
   ))
 
+
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens   = "required"
+  }
 
   # user_data = base64encode(
   #   file("${path.root}/../../dev_classic_userdata.sh")
