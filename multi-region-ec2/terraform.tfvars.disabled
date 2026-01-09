@@ -1,0 +1,8 @@
+
+# cidr_blocks_ingress_bastion = ["49.204.134.28/32"]
+
+project = "multi-region-demo"
+
+enable_ap_south_1 = false
+enable_us_east_1  = true
+enable_us_east_2  = false
